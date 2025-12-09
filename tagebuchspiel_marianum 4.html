@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Tagebuchspiel – Alltag im Marianum (Echtzeitalter)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f5f5f5;
+      color: #222;
+      line-height: 1.5;
+    }
+    .wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+    }
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+    .intro {
+      font-size: 0.95rem;
+      color: #444;
+    }
+    .pill {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: #222a3f;
+      color: #fff;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+    .question-title {
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: #222a3f;
+      font-size: 1.05rem;
+    }
+    .question-text {
+      margin-bottom: 1rem;
+      font-size: 0.98rem;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+    button.choice-btn {
+      padding: 0.7rem 0.9rem;
+      border-radius: 10px;
+      border: none;
+      background: #222a3f;
+      color: #fff;
+      font-size: 0.96rem;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.15s ease;
+    }
+    button.choice-btn:hover {
+      background: #343f60;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 9px rgba(0,0,0,0.18);
+    }
+    button.choice-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    .choice-note {
+      display: block;
+      font-size: 0.8rem;
+      color: #e0e0e0;
+      margin-top: 0.1rem;
+    }
+    .progress {
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 0.3rem;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: #e0e0e0;
+      overflow: hidden;
+      margin-bottom: 0.8rem;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #222a3f, #5563a3);
+      transition: width 0.2s ease-out;
+    }
+    .log {
+      font-size: 0.9rem;
+      max-height: 260px;
+      overflow-y: auto;
+      border-top: 1px solid #ddd;
+      padding-top: 0.6rem;
+      margin-top: 0.4rem;
+    }
+    .log-entry {
+      margin-bottom: 0.4rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px dashed #eee;
+    }
+    .log-step {
+      font-weight: 600;
+      color: #333;
+      display: block;
+    }
+    .log-label {
+      display: block;
+      margin-top: 0.05rem;
+    }
+    .log-note {
+      display: block;
+      margin-top: 0.1rem;
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: #eef0fa;
+      color: #333;
+      margin-right: 0.25rem;
+      margin-top: 0.2rem;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    button.secondary {
+      background: #e0e0e0;
+      color: #222;
+      padding: 0.45rem 0.8rem;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: background 0.1s ease, box-shadow 0.1s ease;
+    }
+    button.secondary:hover {
+      background: #d0d0d0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .small {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .result-text {
+      white-space: pre-line;
+      font-size: 0.97rem;
+    }
+    @media (max-width: 640px) {
+      .card { padding: 1.1rem; }
+      button.choice-btn { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="card">
+    <span class="pill">Echtzeitalter · Marianum</span>
+    <h1>Tagebuchspiel – Alltag im Marianum</h1>
+    <p class="intro">
+      Du spielst einen Schüler im Wiener Halbinternat <strong>Marianum</strong> aus
+      <em>Echtzeitalter</em>. In mehreren Situationen triffst du Entscheidungen zwischen
+      Anpassung, Rebellion, Gaming, kleinen Freiheiten und Angst.
+    </p>
+    <p class="intro">
+      Am Schluss entsteht aus deinen Entscheidungen ein längerer
+      <strong>Tagebucheintrag</strong>, der zeigt, wie du durchs Marianum gekommen bist.
+    </p>
+  </div>
+
+  <div class="card" id="game-card">
+    <div class="progress" id="progress"></div>
+    <div class="progress-bar">
+      <div class="progress-bar-inner" id="progress-bar-inner"></div>
+    </div>
+    <div class="question-title" id="step-title"></div>
+    <div class="question-text" id="step-text"></div>
+    <div class="choices" id="choices"></div>
+    <div class="btn-row">
+      <button class="secondary" id="back-btn" type="button">← Schritt zurück</button>
+      <button class="secondary" id="restart-btn" type="button">Neu beginnen</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Spielprotokoll</h3>
+    <p class="small">
+      Hier siehst du, wie du dich durch das Marianum manövriert hast:
+      zwischen Anpassung, Widerstand, Gaming und kleinen Freiräumen.
+    </p>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="card" id="result-card" style="display:none;">
+    <h2>Dein Tagebucheintrag</h2>
+    <p class="small">
+      Der Text basiert auf deinen Entscheidungen. Er ist keine Szene direkt aus dem Roman,
+      sondern eine mögliche innere Stimme eines Marianum-Schülers.
+    </p>
+    <p class="result-text" id="result-text"></p>
+    <div class="btn-row" style="margin-top:1rem;">
+      <button class="secondary" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'});">
+        Nach oben scrollen
+      </button>
+      <button class="secondary" type="button" onclick="restartGame();">
+        Noch einmal mit anderen Entscheidungen spielen
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const steps = [
+    {
+      title: "Tag der offenen Tür – erster Blick auf das Marianum",
+      text: "Gelbe Fassade, gewachster Steinboden, hoher Hof, die Mauer im Hintergrund. Alle reden von Chancen und Elite.",
+      options: [
+        {
+          label: "A) Du schaust vor allem auf den Großen Platz und stellst dir Turniere vor.",
+          tags: ["anpassung","sport"],
+          note: "Du verbindest Schule reflexhaft mit Leistung und Anerkennung."
+        },
+        {
+          label: "B) Du fragst nach dem Informatiksaal und denkst an schnelle Rechner.",
+          tags: ["gamer","freiheit"],
+          note: "Du suchst nicht nach Prestige, sondern nach Bildschirmen."
+        },
+        {
+          label: "C) Du bleibst an der Mauer hängen und fragst dich, wie man drüber klettern könnte.",
+          tags: ["rebell","freiheit"],
+          note: "Dir fallen zuerst Grenzen auf, nicht Angebote."
+        },
+        {
+          label: "D) Du beobachtest die anderen Kinder in Segelschuhen und fühlst dich fremd.",
+          tags: ["angst"],
+          note: "Du nimmst vor allem Unterschiede wahr."
+        }
+      ]
+    },
+    {
+      title: "Erster Schultag – Dolinars Auftritt",
+      text: "Die erste Deutschstunde. Dolinar betritt den Raum, die Klasse hält kurz den Atem an. 'ottos mops' steht an der Tafel.",
+      options: [
+        {
+          label: "A) Du lachst laut, als 'ottos mops kotzt' vorgelesen wird.",
+          tags: ["rebell","angst"],
+          note: "Du testest die Grenze – sein Blick merkt sich dich."
+        },
+        {
+          label: "B) Du presst die Lippen zusammen und tust so, als wärst du zu alt für so etwas.",
+          tags: ["anpassung"],
+          note: "Du trainierst deine Reaktionen weg."
+        },
+        {
+          label: "C) Du meldest dich und analysierst das Gedicht ernsthaft.",
+          tags: ["anpassung"],
+          note: "Du zeigst Bereitschaft, seine Spielregeln zu übernehmen."
+        },
+        {
+          label: "D) Du senkst den Blick und versuchst, unsichtbar zu sein.",
+          tags: ["angst"],
+          note: "Unsichtbarkeit als Schutzschild."
+        }
+      ]
+    },
+    {
+      title: "Erste Strafe – Aufsatzlogik",
+      text: "Im Klassenzimmer wird mit einem Ball gespielt. Dolinar erwischt euch. Es geht weniger um Schuld als um Gehorsam.",
+      options: [
+        {
+          label: "A) Du schweigst, obwohl du wusstest, dass es Ärger gibt.",
+          tags: ["anpassung","angst"],
+          note: "Du gehst in der Masse unter."
+        },
+        {
+          label: "B) Du gibst zu, dass du mitgespielt hast, und bekommst einen Aufsatz.",
+          tags: ["rebell","freiheit"],
+          note: "Du wählst Ehrlichkeit trotz Strafe."
+        },
+        {
+          label: "C) Du beobachtest, wie die Anzahl Aufsätze seine Macht stabilisiert.",
+          tags: ["gamer"],
+          note: "Du beginnst, das System wie ein Regelwerk zu lesen."
+        },
+        {
+          label: "D) Du beschließt, nie wieder beim Spielen erwischt zu werden.",
+          tags: ["angst","anpassung"],
+          note: "Du akzeptierst die Regeln als Preis."
+        }
+      ]
+    },
+    {
+      title: "Nachmittags-Studium – drei Stunden Schweigen",
+      text: "Nach dem Unterricht beginnt das 'Studium': Drei Stunden Hausaufgaben im Klassenzimmer, Dolinar vorne.",
+      options: [
+        {
+          label: "A) Du arbeitest konzentriert durch und meldest jeden Fortschritt.",
+          tags: ["anpassung"],
+          note: "Du hoffst, dich mit Leistung zu schützen."
+        },
+        {
+          label: "B) Du verbirgst dein Handy hinter Reclam und schreibst Georg.",
+          tags: ["gamer","rebell"],
+          note: "Du baust dir eine heimliche Leitung nach draußen."
+        },
+        {
+          label: "C) Du starrst aus dem Fenster und zählst die Meter bis zur Mauer.",
+          tags: ["freiheit","rebell"],
+          note: "Deine Gedanken testen Ausbruchsszenarien."
+        },
+        {
+          label: "D) Du schreibst mechanisch, ohne zu verstehen, und hoffst, dass der Tag vorbeigeht.",
+          tags: ["angst"],
+          note: "Du funktionierst, innerlich leer."
+        }
+      ]
+    },
+    {
+      title: "Freizeit im Park – Sport, Spiel oder Beobachten",
+      text: "Offiziell ist jetzt Freizeit. Fußball, Waldplatz, Informatiksaal, Sala terrena – verschiedene Welten im selben Park.",
+      options: [
+        {
+          label: "A) Du gehst zum Fußball, auch wenn es nicht deine Leidenschaft ist.",
+          tags: ["anpassung","sport"],
+          note: "Zugehörigkeit über ein beliebiges Hobby."
+        },
+        {
+          label: "B) Du gehst mit Georg in den Informatiksaal und startest Age of Empires.",
+          tags: ["gamer","freiheit"],
+          note: "Du entdeckst dein digitales Terrain."
+        },
+        {
+          label: "C) Du gehst zum Waldplatz und schaust Richtung Nuntiatur und Mauer.",
+          tags: ["rebell","freiheit"],
+          note: "Du suchst die Ränder des Systems."
+        },
+        {
+          label: "D) Du sitzt in der Sala terrena und beobachtest nur.",
+          tags: ["angst"],
+          note: "Du bleibst Zuschauer."
+        }
+      ]
+    },
+    {
+      title: "Skikurs – Zimmerwahl",
+      text: "Vor dem Skikurs werden Zimmer eingeteilt. Georg schlägt vor, dass ihr zusammen einzieht – mit stiller LAN-Absicht.",
+      options: [
+        {
+          label: "A) Du sagst begeistert zu und schmuggelst Laptop und Maus ein.",
+          tags: ["gamer","freiheit"],
+          note: "Du nimmst Risiko für gemeinsame Spielnächte in Kauf."
+        },
+        {
+          label: "B) Du sagst ab, aus Angst vor Entdeckung und Ärger.",
+          tags: ["angst","anpassung"],
+          note: "Sicherheit statt Rausch."
+        },
+        {
+          label: "C) Du stimmst zu, aber ihr vereinbart, nur 'kurz' zu spielen.",
+          tags: ["gamer","rebell"],
+          note: "Du versuchst, Risiko zu dosieren."
+        }
+      ]
+    },
+    {
+      title: "Konsequenzen – Dolinars Verdacht",
+      text: "Zurück in der Schule erwähnt Dolinar ein 'interessantes Gespräch' mit dem Turnlehrer und schaut dich an.",
+      options: [
+        {
+          label: "A) Du gibst alles zu und nimmst die Strafe.",
+          tags: ["rebell"],
+          note: "Du ziehst eine klare Linie, auch wenn sie wehtut."
+        },
+        {
+          label: "B) Du verkaufst es als harmloses 'kurzes Schauen'.",
+          tags: ["anpassung"],
+          note: "Du milderst, ohne komplett zu leugnen."
+        },
+        {
+          label: "C) Du erklärst Gaming als Training und Strategie.",
+          tags: ["gamer","rebell"],
+          note: "Du verteidigst deine Welt gegen seine Logik."
+        },
+        {
+          label: "D) Du schweigst und starrst auf den Boden.",
+          tags: ["angst"],
+          note: "Du ziehst dich in dich selbst zurück."
+        }
+      ]
+    },
+    {
+      title: "Elternkonflikt – Scheidung im Hintergrund",
+      text: "Zu Hause geht es um Alimente, Wohnung, Zukunft. Dein Name fällt, als wärst du Teil einer Verhandlung.",
+      options: [
+        {
+          label: "A) Du gehst ins Zimmer und startest ein Ranked-Match.",
+          tags: ["gamer","freiheit"],
+          note: "Du legst eine andere Welt zwischen dich und ihre Stimmen."
+        },
+        {
+          label: "B) Du lauschst an der Tür, um alles zu verstehen.",
+          tags: ["angst"],
+          note: "Du suchst Kontrolle durch Wissen."
+        },
+        {
+          label: "C) Du gehst dazwischen und verlangst Ruhe.",
+          tags: ["rebell"],
+          note: "Du überschreitest die reine Kinderrolle."
+        },
+        {
+          label: "D) Du machst Hausaufgaben, als wärst du im Studium.",
+          tags: ["anpassung"],
+          note: "Pflichtgefühl als Schutz vor Ohnmacht."
+        }
+      ]
+    },
+    {
+      title: "Nachtgedanke – wem gehört dein Kopf?",
+      text: "Im Bett mischen sich Schulwege, Dolinar-Sätze, Spielzüge und Gespräche deiner Eltern.",
+      options: [
+        {
+          label: "A) Du beschließt, zumindest in Gedanken einen Ort zu haben, an dem dich niemand benotet.",
+          tags: ["freiheit"],
+          note: "Du baust dir inneren Freiraum."
+        },
+        {
+          label: "B) Du nimmst dir vor, noch ordentlicher und fleißiger zu werden.",
+          tags: ["anpassung"],
+          note: "Du reagierst mit Selbstoptimierung auf Druck."
+        },
+        {
+          label: "C) Du fragst dich, ob du irgendwann nur noch im Gaming leben willst.",
+          tags: ["gamer"],
+          note: "Die Fluchtmöglichkeit wirkt verlockend."
+        },
+        {
+          label: "D) Du hast Angst, alles nicht zu schaffen.",
+          tags: ["angst"],
+          note: "Die Summe übersteigt deine Reserven."
+        }
+      ]
+    },
+    {
+      title: "Corona – Schule auf dem Bildschirm",
+      text: "Plötzlich gibt es Fernunterricht. Das Marianum schrumpft in Kacheln, Mikrofonen und Chatfenster.",
+      options: [
+        {
+          label: "A) Du blühst auf, weil du endlich am PC bleiben darfst.",
+          tags: ["gamer","freiheit"],
+          note: "Deine Komfortzone wird vorübergehend zur Norm."
+        },
+        {
+          label: "B) Du vermisst die Struktur und den starren Alltag.",
+          tags: ["anpassung","angst"],
+          note: "Du merkst, wie sehr du dich an äußeren Rahmen gewöhnt hast."
+        },
+        {
+          label: "C) Du beobachtest, wie überfordert viele Lehrpersonen mit Technik sind.",
+          tags: ["gamer","rebell"],
+          note: "Plötzlich weißt du mehr als sie."
+        },
+        {
+          label: "D) Du schaltest Kamera und Mikro aus und verschwindest halb.",
+          tags: ["freiheit"],
+          note: "Du testest Unsichtbarkeit in einem neuen System."
+        }
+      ]
+    },
+    {
+      title: "Onlineruhm – eine zweite Identität",
+      text: "Dein Rang in AOE2 steigt, Namen aus der Szene kennen deinen. In diesem Kosmos bist du mehr als nur ein Schüler im Marianum.",
+      options: [
+        {
+          label: "A) Du erzählst niemandem davon.",
+          tags: ["freiheit","angst"],
+          note: "Du schützt diesen Teil vor fremder Bewertung."
+        },
+        {
+          label: "B) Du teilst es mit Georg und genießt, dass er den Wert versteht.",
+          tags: ["gamer"],
+          note: "Ihr teilt eine Kompetenz, die im Zeugnis nicht vorkommt."
+        },
+        {
+          label: "C) Du fragst dich, ob diese Fähigkeiten irgendwann 'offiziell' zählen werden.",
+          tags: ["rebell"],
+          note: "Du stellst die Hierarchie von Kompetenzen infrage."
+        },
+        {
+          label: "D) Du hast Angst, dass Gaming alles andere verschluckt.",
+          tags: ["angst"],
+          note: "Schutz kippt in Suchtgefahr."
+        }
+      ]
+    },
+    {
+      title: "Maturajahr – Endspurt",
+      text: "Matura rückt näher. Alle sprechen von Studienplänen, Karrierewegen, Netzwerken.",
+      options: [
+        {
+          label: "A) Du planst strategisch, wie du mit minimalem Schaden durchkommst.",
+          tags: ["gamer","anpassung"],
+          note: "Du spielst auf Sieg, nicht auf Schönheit."
+        },
+        {
+          label: "B) Du merkst, dass dich kaum jemand ehrlich gefragt hat, was du willst.",
+          tags: ["freiheit"],
+          note: "Die Frage nach eigener Richtung taucht auf."
+        },
+        {
+          label: "C) Du fühlst dich müde, bevor etwas Neues begonnen hat.",
+          tags: ["angst"],
+          note: "Acht Jahre Fordern haben Spuren hinterlassen."
+        },
+        {
+          label: "D) Du nimmst dir vor, wenigstens den Abschied selbst zu gestalten.",
+          tags: ["rebell"],
+          note: "Du willst beim letzten Akt Regie führen."
+        }
+      ]
+    },
+    {
+      title: "Letzter Schultag – durch das Tor",
+      text: "Du gehst das letzte Mal als Schüler durch das Tor. Die Mauer ist noch da, aber du gehörst nicht mehr dazu.",
+      options: [
+        {
+          label: "A) Du drehst dich nicht um.",
+          tags: ["freiheit"],
+          note: "Du willst den Schnitt, ohne Nostalgie."
+        },
+        {
+          label: "B) Du schaust zurück und spürst Stolz, Wut und Erleichterung zugleich.",
+          tags: ["rebell"],
+          note: "Ambivalenz als ehrliche Bilanz."
+        },
+        {
+          label: "C) Du denkst an Maps: Dieses Level ist durchgespielt, ein neues wartet.",
+          tags: ["gamer"],
+          note: "Du liest dein Leben in Leveln."
+        },
+        {
+          label: "D) Du fragst dich, ob du irgendwann freiwillig zurückkommen würdest.",
+          tags: ["anpassung","angst"],
+          note: "Die Logik des Ortes wirkt nach."
+        }
+      ]
+    }
+  ];
+
+  const scoresInitial = { anpassung:0, rebell:0, gamer:0, freiheit:0, angst:0 };
+  let currentIndex = 0;
+  let scores = { ...scoresInitial };
+  let history = [];
+
+  const progressEl = document.getElementById("progress");
+  const progressBarInner = document.getElementById("progress-bar-inner");
+  const titleEl = document.getElementById("step-title");
+  const textEl = document.getElementById("step-text");
+  const choicesEl = document.getElementById("choices");
+  const logEl = document.getElementById("log");
+  const resultCard = document.getElementById("result-card");
+  const resultTextEl = document.getElementById("result-text");
+  const backBtn = document.getElementById("back-btn");
+  const restartBtn = document.getElementById("restart-btn");
+  const gameCard = document.getElementById("game-card");
+
+  function renderStep() {
+    if (currentIndex >= steps.length) {
+      showResult();
+      return;
+    }
+    resultCard.style.display = "none";
+    gameCard.style.display = "block";
+
+    const step = steps[currentIndex];
+    const total = steps.length;
+    progressEl.textContent = `Schritt ${currentIndex + 1} von ${total} – Schulalltag im Marianum`;
+    progressBarInner.style.width = ((currentIndex) / total) * 100 + "%";
+
+    titleEl.textContent = step.title;
+    textEl.textContent = step.text;
+    choicesEl.innerHTML = "";
+
+    step.options.forEach((opt, idx) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "choice-btn";
+
+      const labelSpan = document.createElement("span");
+      labelSpan.textContent = opt.label;
+      const noteSpan = document.createElement("span");
+      noteSpan.className = "choice-note";
+      noteSpan.textContent = opt.note;
+
+      btn.appendChild(labelSpan);
+      btn.appendChild(noteSpan);
+      btn.addEventListener("click", () => chooseOption(idx));
+      choicesEl.appendChild(btn);
+    });
+
+    backBtn.disabled = history.length === 0;
+  }
+
+  function chooseOption(optionIndex) {
+    const step = steps[currentIndex];
+    const opt = step.options[optionIndex];
+
+    opt.tags.forEach(tag => {
+      if (scores.hasOwnProperty(tag)) scores[tag] += 1;
+    });
+
+    history.push({ stepIndex: currentIndex, optionIndex });
+
+    const entry = document.createElement("div");
+    entry.className = "log-entry";
+
+    const stepSpan = document.createElement("span");
+    stepSpan.className = "log-step";
+    stepSpan.textContent = step.title;
+
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "log-label";
+    labelSpan.textContent = opt.label;
+
+    const noteSpan = document.createElement("span");
+    noteSpan.className = "log-note";
+    noteSpan.textContent = opt.note;
+
+    entry.appendChild(stepSpan);
+    entry.appendChild(labelSpan);
+    entry.appendChild(noteSpan);
+
+    opt.tags.forEach(tag => {
+      const tagSpan = document.createElement("span");
+      tagSpan.className = "tag";
+      tagSpan.textContent = tag;
+      entry.appendChild(tagSpan);
+    });
+
+    logEl.appendChild(entry);
+    logEl.scrollTop = logEl.scrollHeight;
+
+    currentIndex += 1;
+    renderStep();
+  }
+
+  function stepBack() {
+    if (history.length === 0) return;
+    const last = history.pop();
+    const step = steps[last.stepIndex];
+    const opt = step.options[last.optionIndex];
+    opt.tags.forEach(tag => {
+      if (scores.hasOwnProperty(tag)) scores[tag] -= 1;
+    });
+
+    currentIndex = last.stepIndex;
+    if (logEl.lastChild) logEl.removeChild(logEl.lastChild);
+    renderStep();
+  }
+
+  function restartGame() {
+    currentIndex = 0;
+    scores = { ...scoresInitial };
+    history = [];
+    logEl.innerHTML = "";
+    progressBarInner.style.width = "0%";
+    resultCard.style.display = "none";
+    gameCard.style.display = "block";
+    renderStep();
+  }
+
+  function showResult() {
+    gameCard.style.display = "none";
+    progressBarInner.style.width = "100%";
+
+    const scoreEntries = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    const mainTag = scoreEntries[0][0];
+    const secondTag = scoreEntries[1] ? scoreEntries[1][0] : null;
+    const angstLevel = scores.angst;
+    const totalChoices = history.length;
+    const dayNumber = 1300 + totalChoices;
+
+    let text = `Tag ${dayNumber} – Marianum
+
+`;
+    function p(t){ text += t + "\n\n"; }
+
+    if (mainTag === "gamer") {
+      p("Von außen sah dieser Tag wahrscheinlich harmlos aus: Stundenplan, Studium, Park, ein paar Bemerkungen von Dolinar, eine Nachricht deiner Eltern. Von innen war es eher ein Strategiematch mit zu vielen offenen Fronten. Du hast gerechnet, abgewogen, Risiken verschoben – manchmal im Kopf, manchmal auf der Tastatur.");
+      p("In der Schule bist du offiziell nur ein weiterer Name auf einer Liste, eine Note in einer Statistik. Auf den Servern, wo du spielst, bist du mehr als das: jemand, dessen Entscheidungen in Echtzeit Folgen haben, der Fehler sofort sieht und korrigiert, der Niederlagen analysiert und nicht einfach als Charakterfehler ablegt. Es ist seltsam, aber die Welt, die Erwachsene für 'nicht real' halten, fühlt sich oft ehrlicher an als die, in der du Noten bekommst.");
+      p("Dolinars Strafen wirken manchmal wie schlecht gebalancte Patches: hoher Schaden, kaum Lerneffekt, mehr Angst als Erkenntnis. Du schaust dir das an wie ein verbuggtes System, in dem zu viel von Launen abhängt und zu wenig von Transparenz. Vielleicht ist genau das der Unterschied: In deinen Spielen kannst du nachlesen, was passiert ist. Im Marianum musst du oft raten.");
+      p("Heute hast du wieder gemerkt, dass du zweigleisig lebst. Der offizielle Tagesablauf gehört dem Schloss, den Eltern, den Zeugnissen. Die Stunden, in denen du in Lobbys wartest, in denen du klickst, planst, scoutest, gehören dir. Dort musst du niemandem erklären, warum du gut bist. Es reicht, dass es funktioniert.");
+    } else if (mainTag === "rebell") {
+      p("Dieses Haus wäre gern eine perfekte Maschine: schmale Eingänge, klare Gänge, fein sortierte Lebensläufe, die am Ende geordnet wieder ausgespuckt werden. Du hast früh gemerkt, dass im Inneren dieser Maschine Zahnräder quietschen, die man offiziell nicht hören soll.");
+      p("Du hast gelernt, Nein zu denken, auch wenn du Ja sagen musstest. Du hast dich an den Rändern aufgehalten – am Waldplatz, in Gedanken an die Mauer, in winzigen Momenten, in denen du nicht das gesagt hast, was erwartet wurde. Kein großes Drama, keine Revolution, eher ein stiller, hartnäckiger Widerstand gegen die Idee, dass jemand anders definieren darf, wer du bist.");
+      p("Wenn Dolinar mit Reclam in der Hand über Moral, Geschmack und den richtigen Weg spricht, erträgst du es nur, weil du weißt, dass es außerhalb dieses Raumes andere Stimmen gibt. Manche stehen in Büchern, die nicht auf der Leseliste stehen, manche kommen aus Musik, aus Freundschaften, aus Onlinewelten, in denen dich niemand mit deinem Nachnamen anspricht.");
+      p("Vielleicht wird man später einmal sagen, du habest dich gut angepasst. Vielleicht sieht man deinem Lebenslauf nicht an, an wie vielen Stellen du innerlich die Stirn gerunzelt hast. Aber du weißt, dass du einige Türen im Kopf offen gelassen hast, die das Marianum gern zugemacht hätte. Und das ist mehr, als es auf irgendeinem Zeugnis je zu sehen geben wird.");
+    } else if (mainTag === "freiheit") {
+      p("Du hast dir im Laufe der Jahre eine feine Kunst angeeignet: mitten in einem engen System kleine Räume zu finden, in denen du atmen kannst. Nicht spektakulär, nicht dramatisch, eher wie kurze Luftholen zwischen zwei Sätzen – ein Blick aus dem Fenster, ein heimlicher Gedanke, ein Gespräch, das nicht in den Schulstatistiken auftaucht.");
+      p("Freiheit war im Marianum selten ein großer Moment. Sie kam als Lücke im Stundenplan, als Witz, den du nur innerlich erzählt hast, als Spaziergang im Park, bei dem du ausnahmsweise nicht daran gedacht hast, was du noch erledigen musst. Manchmal war sie ein Tab im Browserfenster, manchmal der Entschluss, eine bestimmte Erwartung einfach nicht zu erfüllen.");
+      p("Je länger du hier warst, desto klarer wurde dir: Es gibt äußere Mauern und innere. Die äußere konntest du nicht ändern, aber du konntest entscheiden, ob du sie eins zu eins in deinen Kopf übernimmst. Du hast angefangen, deine eigenen Linien zu ziehen – manche sichtbar, manche nur für dich. Das war riskant, aber notwendig, um nicht komplett im Gelb der Reclamreihe zu verschwinden.");
+      p("Am Ende dieser Zeit bist du nicht plötzlich vollkommen frei. Aber du hast ein Gespür dafür entwickelt, wie sich echte Freiräume anfühlen und wie sich bloß gut verkaufte Zwänge anhören. Dieses Gespür nimmst du mit – und es wird dir wahrscheinlich wichtiger sein als jede einzelne Note, die hier über dir ausgestellt wurde.");
+    } else if (mainTag === "anpassung") {
+      p("Auf dem Papier warst du wahrscheinlich ein Vorzeigeschüler: rechtzeitig, ordentlich, fleißig, konfliktarm. Du hast schnell verstanden, welche Version von dir hier willkommen ist, und du warst erstaunlich gut darin, sie zuverlässig zu liefern. Das hat dir Türen geöffnet und viel Ärger erspart.");
+      p("An vielen Tagen war diese Rolle auch eine Form von Schutz. Wer funktioniert, fällt nicht unangenehm auf. Wer liefert, wird in Ruhe gelassen. Hinter der Fassade der Disziplin stand aber häufig eine ganz andere Frage: Wo bleibst du bei alledem?");
+      p("Du hast dich durch Aufsätze, Prüfungen und Studiennachmittage gearbeitet, bist über den Großen Platz gegangen, als würde er wirklich gespielt werden, hast dir die Mauer angewöhnt wie ein Möbelstück. Und irgendwo unterwegs ist es schwieriger geworden, zu unterscheiden, ob du Dinge machst, weil du sie wirklich willst – oder weil sie von dir erwartet werden.");
+      p("Jetzt, am Ende, beginnt eine andere Aufgabe: herauszufinden, welche Entscheidungen du triffst, wenn niemand mehr daneben steht, der dir eine Note dafür gibt. Vielleicht wirst du feststellen, dass ein Teil der Struktur dir hilft. Vielleicht wirst du merken, dass du manches nur gemacht hast, weil es in dieses Haus gepasst hat. Beides ist okay. Wichtig ist, dass du ab jetzt mitreden darfst, wenn es darum geht, wie dein Alltag aussieht.");
+    } else {
+      p("Wenn du ehrlich bist, hat dich durch viele dieser Jahre vor allem ein Gefühl begleitet: die Sorge, dass ein falscher Schritt alles zerstören könnte. Ein falsch gesetztes Wort, ein verpasster Gruß, ein nicht gemachter Hausaufgabenstrich – und schon schien es, als stünde dein Wert zur Verhandlung.");
+      p("Angst kann unglaublich effizient sein. Sie hat dich pünktlich, gründlich und aufmerksam gemacht. Sie hat dafür gesorgt, dass du Dinge erledigt hast, bei denen andere vielleicht längst aufgegeben hätten. Aber sie hat dir auch abgewöhnt zu fragen, was du willst – und stattdessen ständig gefragt, was andere von dir erwarten.");
+      p("Mit der Zeit wurde aus normalem Respekt vor Schule und Lehrpersonen etwas, das tiefer ging: die permanente Anspannung, etwas falsch zu machen. In solchen Momenten war es schwer zu glauben, dass es irgendwo noch einen Ort gibt, an dem du nicht beobachtet, bewertet oder verglichen wirst.");
+      p("Vielleicht ist das wichtigste Projekt nach dem Marianum nicht ein bestimmter Studiengang, sondern die langsame Arbeit daran, diese Angst nicht mehr dein ganzes Leben planen zu lassen. Zu lernen, dass Fehler nicht automatisch Katastrophen sind. Dass Nein sagen erlaubt ist. Und dass dein Wert nicht an Aufsätzen, Auftritten oder Aufräumplänen hängt.");
+    }
+
+    if (angstLevel >= 5) {
+      p("Trotzdem: Ein Teil dieser Anspannung wird dich noch begleiten. Das ist normal, wenn man so lange in einem System war, das auf Kontrolle aufgebaut ist. Wichtig ist nur, dass du dir erlaubst, neue Erfahrungen zu machen, die dieser inneren Stimme widersprechen – Erfahrungen, in denen du nicht bestraft wirst, wenn du anders bist, langsamer, lauter oder leiser als erwartet.");
+    }
+
+    if (secondTag === "gamer" && mainTag !== "gamer") {
+      p("Dass du einen Teil deiner Zeit in digitalen Welten verbracht hast, ist dabei nicht nur Flucht gewesen. Du hast dort geübt, Entscheidungen zu treffen, Muster zu erkennen, mit Niederlagen umzugehen. All das wird dir auch außerhalb des Bildschirms helfen – selbst wenn viele Erwachsene das nie ganz verstehen werden.");
+    } else if (secondTag === "rebell" && mainTag !== "rebell") {
+      p("Zwischen all den Momenten der Anpassung gab es immer wieder leise Gesten des Widerstands: ein Gedanke, den du nicht geteilt hast, ein Lächeln, das du dir verkniffen hast, eine Frage, die du dir innerlich beantwortet hast, obwohl du wusstest, dass die offizielle Antwort anders lautet. Diese kleinen Neins sind ein Schatz, den du nicht unterschätzen solltest.");
+    } else if (secondTag === "freiheit" && mainTag !== "freiheit") {
+      p("Und da sind die Erinnerungssplitter an Augenblicke, in denen du dich nicht eng gefühlt hast: Gespräche mit Menschen, die dir zuhören, Momente im Park, Abende vor Bildschirmen, an denen niemand dich bewertet hat. Sie zeigen dir, dass es Orte gibt – und geben wird –, an denen du anders leben kannst als hier.");
+    }
+
+    resultTextEl.textContent = text;
+    resultCard.style.display = "block";
+    window.scrollTo({ top: resultCard.offsetTop - 20, behavior: "smooth" });
+  }
+
+  backBtn.addEventListener("click", stepBack);
+  restartBtn.addEventListener("click", restartGame);
+  renderStep();
+</script>
+</body>
+</html>
