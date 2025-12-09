@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Marianum Interactive – Till & Dolinar (Maxi-Version)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f5f5f5;
+      color: #222;
+      line-height: 1.5;
+    }
+    .wrapper { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+    }
+    h1, h2, h3 { margin-top: 0; }
+    .intro { font-size: 0.95rem; color: #444; }
+    .pill {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: #222a3f;
+      color: #fff;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+    .pill.dolinar { background: #5b1a1a; }
+    .mode-label { font-size: 0.8rem; color: #666; margin-bottom: 0.3rem; }
+    .question-title {
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: #222a3f;
+      font-size: 1.05rem;
+    }
+    .question-text { margin-bottom: 1rem; font-size: 0.98rem; }
+    .choices { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+    button.choice-btn {
+      padding: 0.7rem 0.9rem;
+      border-radius: 10px;
+      border: none;
+      background: #222a3f;
+      color: #fff;
+      font-size: 0.96rem;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.15s ease;
+    }
+    .dolinar-mode button.choice-btn { background: #5b1a1a; }
+    .dolinar-mode button.choice-btn:hover { background: #7b2727; }
+    button.choice-btn:hover {
+      background: #343f60;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 9px rgba(0,0,0,0.18);
+    }
+    button.choice-btn:active { transform: translateY(0); box-shadow: none; }
+    .choice-note {
+      display: block;
+      font-size: 0.8rem;
+      color: #e0e0e0;
+      margin-top: 0.1rem;
+    }
+    .progress { font-size: 0.85rem; color: #555; margin-bottom: 0.3rem; }
+    .progress-bar {
+      width: 100%; height: 6px; border-radius: 999px;
+      background: #e0e0e0; overflow: hidden; margin-bottom: 0.8rem;
+    }
+    .progress-bar-inner {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #222a3f, #5563a3);
+      transition: width 0.2s ease-out;
+    }
+    .dolinar-mode .progress-bar-inner {
+      background: linear-gradient(90deg, #5b1a1a, #9b4a4a);
+    }
+    .log {
+      font-size: 0.9rem;
+      max-height: 260px; overflow-y: auto;
+      border-top: 1px solid #ddd;
+      padding-top: 0.6rem; margin-top: 0.4rem;
+    }
+    .log-entry {
+      margin-bottom: 0.4rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px dashed #eee;
+    }
+    .log-step { font-weight: 600; color: #333; display: block; }
+    .log-label { display: block; margin-top: 0.05rem; }
+    .log-note { display: block; margin-top: 0.1rem; font-size: 0.8rem; color: #666; }
+    .tag {
+      display: inline-block;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      background: #eef0fa; color: #333;
+      margin-right: 0.25rem; margin-top: 0.2rem;
+    }
+    .dolinar-mode .tag { background: #f3e7e7; }
+    .btn-row {
+      display: flex; flex-wrap: wrap;
+      gap: 0.5rem; margin-top: 0.5rem;
+    }
+    button.secondary {
+      background: #e0e0e0; color: #222;
+      padding: 0.45rem 0.8rem;
+      border-radius: 9px; border: none;
+      cursor: pointer; font-size: 0.88rem;
+      transition: background 0.1s ease, box-shadow 0.1s ease;
+    }
+    button.secondary:hover {
+      background: #d0d0d0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .small { font-size: 0.8rem; color: #666; }
+    .result-text { white-space: pre-line; font-size: 0.97rem; }
+    .start-buttons {
+      display: flex; flex-wrap: wrap;
+      gap: 0.75rem; margin-top: 1rem;
+    }
+    .start-buttons button {
+      padding: 0.7rem 1rem;
+      border-radius: 10px; border: none;
+      font-size: 0.95rem; cursor: pointer;
+      background: #222a3f; color: #fff;
+    }
+    .start-buttons button.dolinar-btn { background: #5b1a1a; }
+    .start-buttons button:hover { opacity: 0.9; }
+    @media (max-width: 640px) {
+      .card { padding: 1.1rem; }
+      button.choice-btn { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Startmenü -->
+  <div class="card" id="start-card">
+    <span class="pill">Marianum Interactive</span>
+    <h1>Marianum – Zwei Perspektiven (Maxi-Version)</h1>
+    <p class="intro">
+      Wähle eine Perspektive im Wiener Halbinternat <strong>Marianum</strong>:
+    </p>
+    <ul class="intro">
+      <li><strong>Till</strong>: Schüler – zwischen Mauer, Gaming, Druck und Freiheit (20 Situationen).</li>
+      <li><strong>Dolinar</strong>: Deutschlehrer – zwischen Kontrolle, Ordnung und Zweifel (20 Situationen).</li>
+    </ul>
+    <div class="start-buttons">
+      <button onclick="startMode('till')">Als Till spielen</button>
+      <button class="dolinar-btn" onclick="startMode('dolinar')">Als Dolinar spielen</button>
+    </div>
+  </div>
+
+  <!-- Spielkarte -->
+  <div class="card" id="game-card" style="display:none;">
+    <div class="mode-label" id="mode-label"></div>
+    <div class="progress" id="progress"></div>
+    <div class="progress-bar">
+      <div class="progress-bar-inner" id="progress-bar-inner"></div>
+    </div>
+    <div class="question-title" id="step-title"></div>
+    <div class="question-text" id="step-text"></div>
+    <div class="choices" id="choices"></div>
+    <div class="btn-row">
+      <button class="secondary" id="back-btn" type="button">← Schritt zurück</button>
+      <button class="secondary" id="restart-btn" type="button">Neu starten (gleicher Modus)</button>
+      <button class="secondary" type="button" onclick="backToMenu()">Zurück zum Menü</button>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card" id="log-card" style="display:none;">
+    <h3>Spielprotokoll</h3>
+    <p class="small" id="log-hint">
+      Hier siehst du, welche Entscheidungen in diesem Modus getroffen wurden.
+    </p>
+    <div class="log" id="log"></div>
+  </div>
+
+  <!-- Ergebnis -->
+  <div class="card" id="result-card" style="display:none;">
+    <h2 id="result-title">Tagebucheintrag</h2>
+    <p class="small">
+      Der Text basiert auf deinen Entscheidungen. Er ist keine direkte Szene aus dem Roman,
+      sondern eine mögliche innere Stimme der Figur.
+    </p>
+    <p class="result-text" id="result-text"></p>
+    <div class="btn-row" style="margin-top:1rem;">
+      <button class="secondary" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'});">
+        Nach oben scrollen
+      </button>
+      <button class="secondary" type="button" onclick="restartGame();">
+        Noch einmal in diesem Modus spielen
+      </button>
+      <button class="secondary" type="button" onclick="backToMenu();">
+        Modus wechseln
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// --- TILL-Szenen (20) ---
+const tillSteps = [
+  {
+    title: "1. Tag der offenen Tür – erster Blick",
+    text: "Gelbe Fassade, gewachster Steinboden, hoher Hof. Hinter dem Schloss die Mauer. Alle reden von Chancen, Fremdsprachen, Elite.",
+    options: [
+      { label: "A) Du stellst dir auf dem Großen Platz sofort Fußballturniere vor.", tags: ["anpassung","sport"], note: "Du verbindest Schule reflexhaft mit Leistung und Anerkennung." },
+      { label: "B) Du fragst als Erstes nach dem Informatiksaal und denkst an schnelle Rechner.", tags: ["gamer","freiheit"], note: "Du suchst nach Bildschirmen statt Prestige." },
+      { label: "C) Du bleibst an der Mauer hängen und fragst dich, wie man drüber käme.", tags: ["rebell","freiheit"], note: "Du denkst zuerst an Grenzen, nicht an Chancen." },
+      { label: "D) Du beobachtest die anderen Kinder und fühlst dich fremd.", tags: ["angst"], note: "Du spürst Differenz vor Orientierung." }
+    ]
+  },
+  {
+    title: "2. Schubladen – Interessensgruppen",
+    text: "Sprachgruppe, Naturwissenschaften, Sport, Musik, Digitales. Die Führungen sortieren euch in Konzepte.",
+    options: [
+      { label: "A) Du gehst brav zur Sprachgruppe, weil 'Bildung' so klingen soll.", tags: ["anpassung"], note: "Du richtest dich nach Erwartung." },
+      { label: "B) Du wählst Naturwissenschaften, hoffst aber auf PC-Räume.", tags: ["gamer"], note: "Du folgst verdeckt deiner Neigung." },
+      { label: "C) Du gehst zu 'Digitales', obwohl es leer ist.", tags: ["rebell","freiheit"], note: "Du riskierst Sichtbarkeit." },
+      { label: "D) Du überlässt deiner Mutter die Entscheidung.", tags: ["angst","anpassung"], note: "Du vermeidest Verantwortung." }
+    ]
+  },
+  {
+    title: "3. Erste Deutschstunde – Dolinar",
+    text: "Erste Stunde bei Dolinar. 'ottos mops' an der Tafel, sein Blick tastet die Reihen ab.",
+    options: [
+      { label: "A) Du lachst laut, als 'ottos mops kotzt' kommt.", tags: ["rebell","angst"], note: "Du testest und erschrickst zugleich." },
+      { label: "B) Du presst die Lippen zusammen und bleibst steif.", tags: ["anpassung"], note: "Du unterdrückst Impulse." },
+      { label: "C) Du analysierst das Gedicht überernst.", tags: ["anpassung"], note: "Du willst positiv auffallen." },
+      { label: "D) Du senkst den Blick und hoffst, unsichtbar zu bleiben.", tags: ["angst"], note: "Du schützt dich durch Schweigen." }
+    ]
+  },
+  {
+    title: "4. Ball im Klassenzimmer – erste Strafe",
+    text: "Ein Ball fliegt durch die Luft. Stille. Es ist weniger ein Vergehen als ein Ritual der Autorität.",
+    options: [
+      { label: "A) Du schweigst, obwohl du mitgespielt hast.", tags: ["anpassung","angst"], note: "Unsichtbarkeit als Strategie." },
+      { label: "B) Du gibst zu, bekommst einen Aufsatz.", tags: ["rebell","freiheit"], note: "Du wählst Klarheit statt Deckung." },
+      { label: "C) Du analysierst das System: Wie viele Aufsätze braucht er für Ruhe?", tags: ["gamer"], note: "Du gamifizierst die Lage." },
+      { label: "D) Du schwörst dir, nie wieder erwischt zu werden.", tags: ["angst","anpassung"], note: "Furcht als Disziplin." }
+    ]
+  },
+  {
+    title: "5. Studium – kontrollierte Stille",
+    text: "Drei Stunden Studium. Dolinar vorne. Park draußen. Die Uhr tickt anders.",
+    options: [
+      { label: "A) Du arbeitest konzentriert – alles richtig machen.", tags: ["anpassung"], note: "Sicherheit durch Leistung." },
+      { label: "B) Du schreibst Georg heimlich Nachrichten.", tags: ["gamer","rebell"], note: "Verborgenes Netz im System." },
+      { label: "C) Du starrst aus dem Fenster und denkst an die Mauer.", tags: ["freiheit","rebell"], note: "Gedankenspiele als Ausstieg." },
+      { label: "D) Du arbeitest leer weiter.", tags: ["angst"], note: "Du funktionierst ohne zu fühlen." }
+    ]
+  },
+  {
+    title: "6. Freizeit im Park",
+    text: "Der Park ist groß – aber nicht frei. Gruppen bilden sich, Grenzen bleiben.",
+    options: [
+      { label: "A) Du gehst zum Fußball, auch wenn es egal ist.", tags: ["anpassung","sport"], note: "Mitlaufen als Überleben." },
+      { label: "B) Du und Georg finden den Informatiksaal.", tags: ["gamer","freiheit"], note: "Digitaler Rückzugsort." },
+      { label: "C) Du gehst zum Waldplatz, Richtung Mauer.", tags: ["rebell","freiheit"], note: "Die Ränder ziehen dich an." },
+      { label: "D) Du sitzt und beobachtest nur.", tags: ["angst"], note: "Distanz statt Teilhabe." }
+    ]
+  },
+  {
+    title: "7. Skikurs – Zimmerlogistik",
+    text: "Vor dem Skikurs werden Zimmer vergeben. Georg flüstert: 'Nehmen wir Laptop mit?'",
+    options: [
+      { label: "A) Du sagst sofort ja.", tags: ["gamer","freiheit"], note: "Nächte in unerlaubter Welt." },
+      { label: "B) Du lehnst aus Angst ab.", tags: ["angst","anpassung"], note: "Risiko minimieren." },
+      { label: "C) Du sagst ja, aber 'nur kurz spielen'.", tags: ["gamer","rebell"], note: "Regeln beugen, nicht brechen." }
+    ]
+  },
+  {
+    title: "8. Nach dem Skikurs – Verdacht",
+    text: "Dolinar erwähnt im Unterricht ein Gespräch mit dem Turnlehrer – und deinen Namen.",
+    options: [
+      { label: "A) Du gibst alles zu.", tags: ["rebell"], note: "Konfrontation statt Deckung." },
+      { label: "B) Du milderst ab: 'Nur kurz geschaut.'", tags: ["anpassung"], note: "Schadensbegrenzung." },
+      { label: "C) Du verteidigst Gaming als Strategie-Training.", tags: ["gamer","rebell"], note: "Du erklärst deine Welt." },
+      { label: "D) Du schweigst.", tags: ["angst"], note: "Defensive Haltung." }
+    ]
+  },
+  {
+    title: "9. Elternstreit",
+    text: "Deine Eltern streiten laut. Es geht um Schule. Um dich. Um Geld.",
+    options: [
+      { label: "A) Du startest ein Ranked Match.", tags: ["gamer","freiheit"], note: "Digitale Ablenkung als Flucht." },
+      { label: "B) Du lauschst an der Tür.", tags: ["angst"], note: "Information als Kontrolle." },
+      { label: "C) Du gehst dazwischen.", tags: ["rebell"], note: "Du verlangst Respekt." },
+      { label: "D) Du machst Hausaufgaben.", tags: ["anpassung"], note: "Pflicht als Selbstschutz." }
+    ]
+  },
+  {
+    title: "10. Nachtgedanken – innere Räume",
+    text: "Bett. Dunkel. Schule, Eltern, Mauer, Georg, Dolinar, Gaming.",
+    options: [
+      { label: "A) Du beschließt, einen inneren freien Ort zu haben.", tags: ["freiheit"], note: "Privater mentaler Rückzugsraum." },
+      { label: "B) Du willst noch ordentlicher werden.", tags: ["anpassung"], note: "Optimierung gegen Druck." },
+      { label: "C) Du fragst dich, ob du nur noch im Gaming leben willst.", tags: ["gamer"], note: "Alternative Welt." },
+      { label: "D) Du hast Angst, dass alles zu viel wird.", tags: ["angst"], note: "Überforderung." }
+    ]
+  },
+  {
+    title: "11. Mittelstufe – Routine",
+    text: "Du kennst das System: Rituale, Wege, Blicke, Strafen.",
+    options: [
+      { label: "A) Du spielst die Regeln wie ein Levelsystem.", tags: ["gamer","rebell"], note: "Du manipulierst statt folgst." },
+      { label: "B) Du wirst offiziell 'vorbildlich'.", tags: ["anpassung"], note: "Maske perfektioniert." },
+      { label: "C) Du wirst stiller.", tags: ["angst"], note: "Energie sparen." },
+      { label: "D) Du achtest auf wenige normale Lehrpersonen.", tags: ["freiheit"], note: "Inseln im System." }
+    ]
+  },
+  {
+    title: "12. Literatur – Waffe oder Möglichkeit?",
+    text: "Reclam-Stapel wächst. Texte werden im Marianum politisch.",
+    options: [
+      { label: "A) Du liest gerade genug.", tags: ["anpassung"], note: "Pflichthaltung." },
+      { label: "B) Du findest heimliche Verbündete in Sätzen.", tags: ["freiheit"], note: "Lesen gegen die Macht." },
+      { label: "C) Du merkst die rhetorische Macht von Interpretation.", tags: ["rebell"], note: "Text ≠ Dolinars Deutung." },
+      { label: "D) Du denkst bei Romanaufbau an Strategien.", tags: ["gamer"], note: "Regelwerke verknüpft." }
+    ]
+  },
+  {
+    title: "13. Freifächer – verpasste Räume",
+    text: "Andere machen Projekte, Austausch, Freifächer. Ihr nicht.",
+    options: [
+      { label: "A) Du akzeptierst es.", tags: ["anpassung"], note: "Systemlogik übernehmen." },
+      { label: "B) Du meldest dich heimlich an.", tags: ["rebell","freiheit"], note: "Erschlichene Freiräume." },
+      { label: "C) Du baust dein eigenes Curriculum.", tags: ["gamer","freiheit"], note: "Selbststudium." },
+      { label: "D) Du wirst bitter.", tags: ["angst"], note: "Ungleichheit frustriert." }
+    ]
+  },
+  {
+    title: "14. Die Mauer im Alltag",
+    text: "Sie steht da. Immer. Manchmal lautlos, manchmal erdrückend.",
+    options: [
+      { label: "A) Du nimmst sie kaum mehr wahr.", tags: ["anpassung"], note: "Normalisierung von Grenzen." },
+      { label: "B) Du suchst niedrige Stellen.", tags: ["rebell","freiheit"], note: "Testen der Grenzen." },
+      { label: "C) Du modellierst Ausbruchspläne wie Maps.", tags: ["gamer"], note: "Strategisches Denken." },
+      { label: "D) Du spürst sie als innere Grenze.", tags: ["angst"], note: "Außen wird Innen." }
+    ]
+  },
+  {
+    title: "15. Corona – Schule im Fenster",
+    text: "Online-Unterricht. Marianum im Pixelmodus.",
+    options: [
+      { label: "A) Du blühst auf – PC ist dein Terrain.", tags: ["gamer","freiheit"], note: "Umkehr der Macht." },
+      { label: "B) Du vermisst Struktur.", tags: ["anpassung","angst"], note: "Orientierungsverlust." },
+      { label: "C) Du siehst Lehrpersonen ratlos vor Technik.", tags: ["gamer","rebell"], note: "Kompetenz kehrt sich um." },
+      { label: "D) Du driftest ab.", tags: ["freiheit"], note: "Unsichtbarkeit möglich." }
+    ]
+  },
+  {
+    title: "16. Online-Rang",
+    text: "Du steigst in Age of Empires im Ranking.",
+    options: [
+      { label: "A) Du erzählst niemandem davon.", tags: ["freiheit","angst"], note: "Schutzraum." },
+      { label: "B) Du teilst es mit Georg.", tags: ["gamer"], note: "Gemeinsamer Code." },
+      { label: "C) Du hoffst, dass Gaming irgendwann zählt.", tags: ["rebell"], note: "Widerstand gegen Hierarchien." },
+      { label: "D) Du fürchtest Sucht.", tags: ["angst"], note: "Ambivalenz." }
+    ]
+  },
+  {
+    title: "17. Konflikt mit Dolinar",
+    text: "Du widersprichst innerlich jeder zweiten These.",
+    options: [
+      { label: "A) Du schweigst.", tags: ["anpassung","angst"], note: "Selbstschutz." },
+      { label: "B) Du widersprichst.", tags: ["rebell"], note: "Risiko auf dem Tisch." },
+      { label: "C) Du denkst: 'Seine Meinung zählt bald nicht mehr.'", tags: ["freiheit"], note: "Blick nach außen." },
+      { label: "D) Du kalkulierst Noten.", tags: ["gamer"], note: "Systemoptimierung." }
+    ]
+  },
+  {
+    title: "18. Maturajahr – Orientierung",
+    text: "Alle reden von Zukunft. Du bist müde und gleichzeitig wach.",
+    options: [
+      { label: "A) Du planst minimalen Aufwand für maximalen Erfolg.", tags: ["gamer","anpassung"], note: "Effizienzmodus." },
+      { label: "B) Du fragst dich, was DU willst.", tags: ["freiheit"], note: "Erster eigener Impuls." },
+      { label: "C) Du fühlst dich leer.", tags: ["angst"], note: "Erschöpfung." },
+      { label: "D) Du willst das Finale selbst schreiben.", tags: ["rebell"], note: "Aktive Gestaltung." }
+    ]
+  },
+  {
+    title: "19. Letzte Wochen",
+    text: "Abschlussprüfungen, Nostalgie, Müdigkeit.",
+    options: [
+      { label: "A) Du bist auch dankbar.", tags: ["anpassung"], note: "Weiche Rekonstruktion." },
+      { label: "B) Du zählst die Tage.", tags: ["freiheit","rebell"], note: "Countdown." },
+      { label: "C) Du lebst mental mehr online als offline.", tags: ["gamer"], note: "Entkopplung." },
+      { label: "D) Du fürchtest Freiheit.", tags: ["angst"], note: "Rahmenverlust." }
+    ]
+  },
+  {
+    title: "20. Das Tor",
+    text: "Du gehst ein letztes Mal hinaus.",
+    options: [
+      { label: "A) Du drehst dich nicht um.", tags: ["freiheit"], note: "Abnabelung." },
+      { label: "B) Du schaust zurück – gemischt.", tags: ["rebell"], note: "Ambivalente Bilanz." },
+      { label: "C) Du denkst in Maps: Level durchgespielt.", tags: ["gamer"], note: "Gamifizierte Biografie." },
+      { label: "D) Du fragst dich, ob du je freiwillig zurückkehrst.", tags: ["anpassung","angst"], note: "Nachhall." }
+    ]
+  }
+];
+
+const tillScoresInitial = { anpassung:0, rebell:0, gamer:0, freiheit:0, angst:0, sport:0 };
+
+// --- Dolinar-Szenen (20) ---
+const dolinarSteps = [
+  {
+    title: "1. Erster Eindruck der neuen Klasse",
+    text: "Du betrittst das Klassenzimmer. Neue Schüler, neue Blicke. Manche wirken eingeschüchtert, manche gelangweilt, manche wach. Du spürst sofort: Hier entscheidet sich das Jahr.",
+    options: [
+      { label: "A) Du lässt sie stehen, bis absolute Stille herrscht.", tags: ["kontrolle","ordnung"], note: "Disziplin als Auftakt." },
+      { label: "B) Du begrüßt sie knapp und beobachtest gezielt jeden Sitzplatz.", tags: ["misstrauen","ordnung"], note: "Daten sammeln vor Nähe." },
+      { label: "C) Du rezitierst ein Gedicht – als Prüfstein.", tags: ["autorität"], note: "Bildung als Distanzmittel." },
+      { label: "D) Du fragst dich, wer von ihnen wieder 'Problemfälle' werden.", tags: ["misstrauen"], note: "Frühdiagnosen." }
+    ]
+  },
+  {
+    title: "2. Der Ball durch die Luft",
+    text: "In der zweiten Woche fliegt ein Ball quer durch deinen Unterricht. Ein Klassiker. Stille. Köpfe senken sich.",
+    options: [
+      { label: "A) Du verhängst Kollektivaufsatz.", tags: ["kontrolle","ordnung"], note: "Druck verteilt Verantwortung." },
+      { label: "B) Du forderst ein Geständnis und erhöhst den Druck.", tags: ["misstrauen","kontrolle"], note: "Psychologisches Kesseltreiben." },
+      { label: "C) Du kommentierst kühl und machst weiter.", tags: ["rechtfertigung","ordnung"], note: "Effizienz vor Emotion." },
+      { label: "D) Du merkst dir still: Wer blickt wohin?", tags: ["misstrauen"], note: "Mikrosignale als Wahrheit." }
+    ]
+  },
+  {
+    title: "3. Unterrichtsbesuch einer Kollegin",
+    text: "Eine Kollegin sitzt hinten, schreibt mit. Die Klasse ist unruhig. Du spürst die Beobachtung.",
+    options: [
+      { label: "A) Du ziehst deine autoritärste Stunde durch.", tags: ["autorität","kontrolle"], note: "Macht als Visitenkarte." },
+      { label: "B) Du betonst beiläufig, wie anspruchsvoll die Gruppe sei.", tags: ["rechtfertigung"], note: "Du rahmst die Wahrnehmung." },
+      { label: "C) Du spielst Gelassenheit vor.", tags: ["ordnung"], note: "Fassadentechnik." },
+      { label: "D) Du fragst dich, warum dir das wichtig ist – und verdrängst es.", tags: ["zweifel"], note: "Selbstbeobachtung kurz zugelassen." }
+    ]
+  },
+  {
+    title: "4. Korrigieren bis spät in die Nacht",
+    text: "Die Aufsätze stapeln sich. Wieder ein Freitagabend mit Rotstift.",
+    options: [
+      { label: "A) Du korrigierst härter – es braucht klare Linien.", tags: ["kontrolle","ordnung"], note: "Grenzziehung im Text." },
+      { label: "B) Du suchst Belege für deine Strenge.", tags: ["rechtfertigung"], note: "Selbstrechtfertigende Lesart." },
+      { label: "C) Du fragst dich, ob du zu hart bist.", tags: ["zweifel"], note: "Erster feiner Riss." },
+      { label: "D) Du übergehst alles, was deine Sicht stört.", tags: ["misstrauen"], note: "Du fixierst dich auf Fehlersuche." }
+    ]
+  },
+  {
+    title: "5. Gespräch mit den Eltern eines Schülers",
+    text: "Sie fragen, ob der Druck wirklich notwendig sei. Der Vater bemüht diplomatische Floskeln, die Mutter wirkt kritisch.",
+    options: [
+      { label: "A) Du sprichst von 'Tradition'.", tags: ["rechtfertigung","ordnung"], note: "Institution als Schild." },
+      { label: "B) Du sagst, manche brauchen Druck.", tags: ["kontrolle"], note: "Effizienzargument." },
+      { label: "C) Du fragst, wie viel sie selbst tun.", tags: ["misstrauen","rechtfertigung"], note: "Verantwortung verteilen." },
+      { label: "D) Du denkst kurz, ob sie recht haben – sagst es aber nicht.", tags: ["zweifel"], note: "Unformulierte Einsicht." }
+    ]
+  },
+  {
+    title: "6. Problemfall – ein müder Schüler",
+    text: "Der Junge wirkt abwesend. Seine Aufsätze sind blass. Statistisch zieht er die Klasse herunter.",
+    options: [
+      { label: "A) Du erhöhst den Druck.", tags: ["kontrolle","ordnung"], note: "Disziplin über Diagnose." },
+      { label: "B) Du führst ein ruhiges Gespräch.", tags: ["zweifel"], note: "Moment echter Pädagogik." },
+      { label: "C) Du denkst über einen Schulwechsel nach.", tags: ["rechtfertigung"], note: "Systemoptimierung." },
+      { label: "D) Du markierst Fehler noch deutlicher.", tags: ["kontrolle"], note: "Überdeutliche Strenge." }
+    ]
+  },
+  {
+    title: "7. Rückmeldung der Direktion",
+    text: "Die Direktion spricht von 'angespannten Lernatmosphären'.",
+    options: [
+      { label: "A) Du argumentierst, dass ernste Fächer ernste Räume brauchen.", tags: ["rechtfertigung","autorität"], note: "Vernünftige Härte." },
+      { label: "B) Du fragst, ob alle Kolleg*innen wirklich 'locker' seien.", tags: ["misstrauen"], note: "Vergleich als Verteidigung." },
+      { label: "C) Du gibst gezwungen Selbstkritik zu.", tags: ["zweifel"], note: "Kurzsichtiger Trost." },
+      { label: "D) Du erklärst, dass Disziplin mangelnde Elternarbeit kompensiere.", tags: ["autorität","ordnung"], note: "Systemfehler externalisiert." }
+    ]
+  },
+  {
+    title: "8. Informatiksaal – Gaming",
+    text: "Du erfährst, dass Schüler Age of Empires spielen.",
+    options: [
+      { label: "A) Du verhängst Saalverbot ohne Aufsicht.", tags: ["kontrolle","ordnung"], note: "Digitale Grenzen." },
+      { label: "B) Du erwähnst 'Sucht' im Elternbrief.", tags: ["rechtfertigung","misstrauen"], note: "Moralischer Rahmen." },
+      { label: "C) Du denkst darüber nach, selbst nie solche Welten gehabt zu haben.", tags: ["zweifel"], note: "Anflug von Neid." },
+      { label: "D) Du sagst: 'Bildschirmkompetenz ist keine Kompetenz.'", tags: ["autorität"], note: "Hierarchie der Tätigkeiten." }
+    ]
+  },
+  {
+    title: "9. Kollegium – Flüstertöne",
+    text: "Du hörst Gerüchte über deine Strenge.",
+    options: [
+      { label: "A) Du sagst dir: Gute Erziehung erzeugt Widerstand.", tags: ["rechtfertigung","autorität"], note: "Klassischer Lehrsatz." },
+      { label: "B) Du überlegst, etwas zu ändern – Kleines.", tags: ["zweifel"], note: "Behutsamer Riss." },
+      { label: "C) Du führst interne Verdachtslisten.", tags: ["misstrauen"], note: "Paranoide Tendenzen." },
+      { label: "D) Du sammelst Gegenbelege.", tags: ["rechtfertigung","ordnung"], note: "Eigene Wahrheit konstruieren." }
+    ]
+  },
+  {
+    title: "10. Privatleben – Übergewicht des Berufs",
+    text: "Du merkst: Dein Leben besteht fast nur aus Schule.",
+    options: [
+      { label: "A) Du glorifizierst das als Berufung.", tags: ["rechtfertigung","autorität"], note: "Opfermythos." },
+      { label: "B) Du unterdrückst Einsamkeit.", tags: ["zweifel"], note: "Gefühlskompensation." },
+      { label: "C) Du sagst: 'So ist echte Pädagogik.'", tags: ["rechtfertigung"], note: "Inneres Echo." },
+      { label: "D) Du fragst dich: Wann tat ich zuletzt etwas Zweckloses?", tags: ["zweifel"], note: "Gefährlicher Gedanke." }
+    ]
+  },
+  {
+    title: "11. Schüler widerspricht offen",
+    text: "Ein Schüler widerspricht. Ruhig. Klar. Die Klasse beobachtet dich.",
+    options: [
+      { label: "A) Du zerpflückst seine Argumente.", tags: ["autorität","kontrolle"], note: "Hierarchie durch Sprache." },
+      { label: "B) Du betonst Grenzen.", tags: ["ordnung"], note: "Positionsverteidigung." },
+      { label: "C) Du wirst müde und lässt ihn gewähren.", tags: ["zweifel"], note: "Zerbrechende Fassaden." },
+      { label: "D) Du gibst ihm minimal recht.", tags: ["rechtfertigung"], note: "Gesteuerte Großzügigkeit." }
+    ]
+  },
+  {
+    title: "12. Inspektion – Tintenblick",
+    text: "Die Direktion sitzt wieder in deiner Stunde.",
+    options: [
+      { label: "A) Perfekte Musterstunde.", tags: ["autorität","ordnung"], note: "Schaufensterpädagogik." },
+      { label: "B) Gespräch moderieren – riskant.", tags: ["zweifel"], note: "Mehr Freiheit wagen." },
+      { label: "C) Subtile Selbstlob-Hinweise in Nebensätzen.", tags: ["rechtfertigung"], note: "Imagepolitik." },
+      { label: "D) Freude über die stille Angst im Raum.", tags: ["kontrolle","misstrauen"], note: "Angst als Erfolgsindikator." }
+    ]
+  },
+  {
+    title: "13. Donnerstagsdepression",
+    text: "Zweiter Abschnitt des Semesters. Die Routine wird schwer.",
+    options: [
+      { label: "A) Du reagierst mit noch strengeren Regeln.", tags: ["kontrolle"], note: "Ordnung gegen Müdigkeit." },
+      { label: "B) Du reduzierst Strafen minimal.", tags: ["zweifel"], note: "Winzige Öffnung." },
+      { label: "C) Du hältst alles unverändert.", tags: ["ordnung"], note: "Beharrung." },
+      { label: "D) Du siehst in jeder Unruhe persönlichen Angriff.", tags: ["misstrauen"], note: "Reizbarkeit." }
+    ]
+  },
+  {
+    title: "14. Kollegiale Beratung?",
+    text: "Ein Kollege schlägt vor, du könntest mal in seine Stunde kommen.",
+    options: [
+      { label: "A) Du lehnst ab – 'fehlende Zeit'.", tags: ["autorität"], note: "Hierarchie statt Austausch." },
+      { label: "B) Du sagst zu, kommst aber nicht.", tags: ["misstrauen"], note: "Unverbindliche Höflichkeit." },
+      { label: "C) Du gehst hin.", tags: ["zweifel"], note: "Lernen trotz Stolz." },
+      { label: "D) Du denkst, seine Lockerheit sei Show.", tags: ["rechtfertigung","kontrolle"], note: "Abwertung des Anderen." }
+    ]
+  },
+  {
+    title: "15. Elternsprechtag – Marathon",
+    text: "Viele Gespräche. Viele Beschwerden. Viele Vergleiche.",
+    options: [
+      { label: "A) Du betonst die Notwendigkeit deiner Strenge bei jeder Gelegenheit.", tags: ["rechtfertigung","autorität"], note: "Dauerargument." },
+      { label: "B) Du hältst distanziert-professionell durch.", tags: ["ordnung"], note: "Sachlichkeit als Rüstung." },
+      { label: "C) Du bemerkst ein gut begründetes Feedback und stockst kurz.", tags: ["zweifel"], note: "Gegenargument trifft." },
+      { label: "D) Du denkst bei Kritik sofort an mangelnde Erziehung.", tags: ["misstrauen"], note: "Schuldumlenkung." }
+    ]
+  },
+  {
+    title: "16. Konflikt im Klassenzimmer",
+    text: "Eine Gruppe widerspricht kollektiv. Es knistert.",
+    options: [
+      { label: "A) Du stellst die Gruppe öffentlich bloß.", tags: ["kontrolle","autorität"], note: "Demonstrative Macht." },
+      { label: "B) Du verkürzt die Stunde abrupt.", tags: ["ordnung"], note: "Zeit als Waffe." },
+      { label: "C) Du setzt dich kurz.", tags: ["zweifel"], note: "Selbstschutz." },
+      { label: "D) Du analysierst, wer die heimlichen Anführer sind.", tags: ["misstrauen"], note: "Soziogramm der Defiance." }
+    ]
+  },
+  {
+    title: "17. Der eine schwierige Schüler",
+    text: "Der Junge, der dir immer wieder aufgefallen ist.",
+    options: [
+      { label: "A) Du verschärfst Regeln speziell für ihn.", tags: ["kontrolle"], note: "Individuelle Härte." },
+      { label: "B) Du gibst ihm einen kleinen Freiraum.", tags: ["zweifel"], note: "Testballon." },
+      { label: "C) Du suchst nach disziplinarischen Zusatzoptionen.", tags: ["ordnung","misstrauen"], note: "Erweiterter Maßnahmenkatalog." },
+      { label: "D) Du willst ihn aus dem System manövrieren.", tags: ["rechtfertigung"], note: "Statistik-Optimierung." }
+    ]
+  },
+  {
+    title: "18. Müdigkeit – der lange Blick",
+    text: "Manchmal wird dir beim Sprechen klar, dass du Dinge schon vor Jahren so gesagt hast.",
+    options: [
+      { label: "A) Du findest Trost in deiner Routine.", tags: ["ordnung"], note: "Struktur über Identität." },
+      { label: "B) Du fühlst dich wieder wie der junge Lehrer, den niemand ernst nahm.", tags: ["zweifel"], note: "Vergangenheits-Trigger." },
+      { label: "C) Du hebst den Tonfall.", tags: ["kontrolle","autorität"], note: "Lautstärke ersetzt Inhalt." },
+      { label: "D) Du eiferst innerlich dagegen an.", tags: ["rechtfertigung"], note: "Selbstbild verteidigen." }
+    ]
+  },
+  {
+    title: "19. Letzte Schulwochen",
+    text: "Zeugnisse geschrieben. Summen gezogen. Das Jahr ist beinahe vorbei.",
+    options: [
+      { label: "A) Du fühlst dich bestätigt.", tags: ["autorität","ordnung"], note: "Ergebnisse über Erfahrungen." },
+      { label: "B) Du fragst dich erneut, wo du zu hart warst.", tags: ["zweifel"], note: "Leiser Schmerz." },
+      { label: "C) Du sortierst alles methodisch für die Akten.", tags: ["ordnung"], note: "Archivierung als Kontrolle." },
+      { label: "D) Du rechtfertigst deine Strenge ausführlich im Abschlussschreiben.", tags: ["rechtfertigung"], note: "Dokumentierte Selbstsicht." }
+    ]
+  },
+  {
+    title: "20. Der leere Raum",
+    text: "Du stehst allein im Raum, nachdem die Klasse gegangen ist.",
+    options: [
+      { label: "A) Du sagst laut: 'Gut gemacht.'", tags: ["autorität"], note: "Sieg über Zweifel." },
+      { label: "B) Du flüsterst: 'Vielleicht zu viel.'", tags: ["zweifel"], note: "Erkenntnis im Schatten." },
+      { label: "C) Du ordnest die Stühle perfekt.", tags: ["ordnung","kontrolle"], note: "Ritual der Restkontrolle." },
+      { label: "D) Du kontrollierst, ob Fenster wirklich zu sind.", tags: ["misstrauen"], note: "Fixierung auf Sicherheit." }
+    ]
+  }
+];
+
+const dolinarScoresInitial = {
+  kontrolle: 0,
+  autorität: 0,
+  ordnung: 0,
+  misstrauen: 0,
+  rechtfertigung: 0,
+  zweifel: 0
+};
+
+// --- SPIELENGINE ---
+const startCardEl = document.getElementById("start-card");
+const gameCardEl = document.getElementById("game-card");
+const logCardEl = document.getElementById("log-card");
+const resultCardEl = document.getElementById("result-card");
+
+const modeLabelEl = document.getElementById("mode-label");
+const progressElDom = document.getElementById("progress");
+const progressBarInnerEl = document.getElementById("progress-bar-inner");
+const titleElDom = document.getElementById("step-title");
+const textElDom = document.getElementById("step-text");
+const choicesElDom = document.getElementById("choices");
+const logElDom = document.getElementById("log");
+const logHintEl = document.getElementById("log-hint");
+const resultTitleEl = document.getElementById("result-title");
+const resultTextElDom = document.getElementById("result-text");
+const backBtnEl = document.getElementById("back-btn");
+const restartBtnEl = document.getElementById("restart-btn");
+
+let currentModeKey = null;
+let currentSteps = [];
+let currentScores = {};
+let currentScoresInitial = {};
+let currentIndexState = 0;
+let historyState = [];
+
+const modes = {
+  till: {
+    label: "Du spielst: Till – Schüler im Marianum",
+    resultTitle: "Tills Tagebucheintrag",
+    cssClass: "till-mode",
+    steps: tillSteps,
+    scoresInitial: tillScoresInitial
+  },
+  dolinar: {
+    label: "Du spielst: Dolinar – Lehrer im Marianum",
+    resultTitle: "Dolinars Tagebucheintrag",
+    cssClass: "dolinar-mode",
+    steps: dolinarSteps,
+    scoresInitial: dolinarScoresInitial
+  }
+};
+
+function startMode(modeKey) {
+  currentModeKey = modeKey;
+  const mode = modes[modeKey];
+  currentSteps = mode.steps;
+  currentScoresInitial = mode.scoresInitial;
+  currentScores = { ...currentScoresInitial };
+  currentIndexState = 0;
+  historyState = [];
+
+  document.body.classList.remove("dolinar-mode");
+  if (modeKey === "dolinar") {
+    document.body.classList.add("dolinar-mode");
+    logHintEl.textContent = "Dolinars Entscheidungen – wie er seine Rolle, Kontrolle und Zweifel ausbalanciert.";
+  } else {
+    logHintEl.textContent = "Tills Entscheidungen – wie er zwischen Anpassung, Gaming und Freiheit navigiert.";
+  }
+
+  modeLabelEl.textContent = mode.label;
+  resultTitleEl.textContent = mode.resultTitle;
+
+  startCardEl.style.display = "none";
+  gameCardEl.style.display = "block";
+  logCardEl.style.display = "block";
+  resultCardEl.style.display = "none";
+  logElDom.innerHTML = "";
+  progressBarInnerEl.style.width = "0%";
+
+  renderStep();
+}
+
+function renderStep() {
+  if (currentIndexState >= currentSteps.length) {
+    showResult();
+    return;
+  }
+
+  const step = currentSteps[currentIndexState];
+  const total = currentSteps.length;
+
+  progressElDom.textContent = `Schritt ${currentIndexState + 1} von ${total}`;
+  progressBarInnerEl.style.width = (currentIndexState / total) * 100 + "%";
+
+  titleElDom.textContent = step.title;
+  textElDom.textContent = step.text;
+  choicesElDom.innerHTML = "";
+
+  step.options.forEach((opt, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice-btn";
+
+    const labelSpan = document.createElement("span");
+    labelSpan.textContent = opt.label;
+
+    const noteSpan = document.createElement("span");
+    noteSpan.className = "choice-note";
+    noteSpan.textContent = opt.note;
+
+    btn.appendChild(labelSpan);
+    btn.appendChild(noteSpan);
+
+    btn.addEventListener("click", () => chooseOption(idx));
+    choicesElDom.appendChild(btn);
+  });
+
+  backBtnEl.disabled = historyState.length === 0;
+}
+
+function chooseOption(optionIndex) {
+  const step = currentSteps[currentIndexState];
+  const opt = step.options[optionIndex];
+
+  opt.tags.forEach(tag => {
+    if (currentScores.hasOwnProperty(tag)) {
+      currentScores[tag] += 1;
+    }
+  });
+
+  historyState.push({ stepIndex: currentIndexState, optionIndex });
+
+  const entry = document.createElement("div");
+  entry.className = "log-entry";
+
+  const stepSpan = document.createElement("span");
+  stepSpan.className = "log-step";
+  stepSpan.textContent = step.title;
+
+  const labelSpan = document.createElement("span");
+  labelSpan.className = "log-label";
+  labelSpan.textContent = opt.label;
+
+  const noteSpan = document.createElement("span");
+  noteSpan.className = "log-note";
+  noteSpan.textContent = opt.note;
+
+  entry.appendChild(stepSpan);
+  entry.appendChild(labelSpan);
+  entry.appendChild(noteSpan);
+
+  opt.tags.forEach(tag => {
+    const tagSpan = document.createElement("span");
+    tagSpan.className = "tag";
+    tagSpan.textContent = tag;
+    entry.appendChild(tagSpan);
+  });
+
+  logElDom.appendChild(entry);
+  logElDom.scrollTop = logElDom.scrollHeight;
+
+  currentIndexState++;
+  renderStep();
+}
+
+function stepBack() {
+  if (historyState.length === 0) return;
+
+  const last = historyState.pop();
+  const step = currentSteps[last.stepIndex];
+  const opt = step.options[last.optionIndex];
+
+  opt.tags.forEach(tag => {
+    if (currentScores.hasOwnProperty(tag)) {
+      currentScores[tag] -= 1;
+    }
+  });
+
+  currentIndexState = last.stepIndex;
+  if (logElDom.lastChild) logElDom.removeChild(logElDom.lastChild);
+
+  renderStep();
+}
+
+function restartGame() {
+  const mode = modes[currentModeKey];
+  currentScores = { ...mode.scoresInitial };
+  currentIndexState = 0;
+  historyState = [];
+
+  logElDom.innerHTML = "";
+  progressBarInnerEl.style.width = "0%";
+  resultCardEl.style.display = "none";
+  gameCardEl.style.display = "block";
+
+  renderStep();
+}
+
+function backToMenu() {
+  startCardEl.style.display = "block";
+  gameCardEl.style.display = "none";
+  logCardEl.style.display = "none";
+  resultCardEl.style.display = "none";
+  logElDom.innerHTML = "";
+  document.body.classList.remove("dolinar-mode");
+}
+
+// --- AUSWERTUNG UND TAGEBUCH ---
+
+function showResult() {
+  gameCardEl.style.display = "none";
+  progressBarInnerEl.style.width = "100%";
+
+  const entries = Object.entries(currentScores).sort((a,b)=>b[1]-a[1]);
+  const mainTag = entries[0] ? entries[0][0] : null;
+  const secondTag = entries[1] ? entries[1][0] : null;
+
+  let text = "";
+  if (currentModeKey === "till") {
+    text = generateTillDiary(mainTag, secondTag, currentScores, historyState);
+  } else {
+    text = generateDolinarDiary(mainTag, secondTag, currentScores, historyState);
+  }
+
+  resultTextElDom.textContent = text;
+  resultCardEl.style.display = "block";
+  window.scrollTo({ top: resultCardEl.offsetTop - 20, behavior: "smooth" });
+}
+
+function generateTillDiary(mainTag, secondTag, scores, history) {
+  let out = "";
+  function p(t){ out += t + "\n\n"; }
+
+  const angstLevel = scores.angst || 0;
+
+  if (mainTag === "gamer") {
+    p("Von außen sieht mein Marianum-Tag aus wie jeder andere: Stundenplan, Studium, Park, Aufsätze, Matura-Angst. Von innen fühlt er sich eher an wie ein langes Match, in dem ich ständig entscheiden muss, welche Front ich als nächstes halte: Schule, Eltern, Freundschaften, Karten auf dem Bildschirm.");
+    p("Im Klassenzimmer bin ich ein Name in einer Liste, eine Note in einer Spalte. Online bin ich jemand, den andere am Rang erkennen. Dort zählt, wie ich entscheide, nicht, wie ich grüße. Niederlagen sind transparent: Replays, Statistiken, Fehler, die man sehen kann. Im Marianum sind Niederlagen oft Blicke, Andeutungen, Stimmungen, die im Raum hängen, ohne dass jemand sie aufschreibt.");
+    p("Dolinars Aufsatzlogik wirkt manchmal wie ein schlecht programmiertes System: hoher Schaden für kleine Vergehen, kaum Belohnung für echte Einsicht. Vielleicht ist es genau das, was mich in die Spiele gezogen hat: eine Welt, in der Regeln hart, aber nachvollziehbar sind. Wenn ich dort verliere, weiß ich, warum. Wenn ich hier verliere, bleibt oft nur das Gefühl, persönlich gemeint gewesen zu sein.");
+  } else if (mainTag === "rebell") {
+    p("Dieses Haus wäre gern eine perfekte Maschine: ordentliche Biografien rein, perfekte Absolventen raus. Dazwischen Stundenpläne, Rituale, Mappen, Aufsätze. Ich habe früh gemerkt, dass es im Inneren dieser Maschine quietscht, dass Zahnräder nicht sauber ineinandergreifen, dass Menschen in den Zwischenräumen verschwinden können.");
+    p("Mein Widerstand war selten laut. Oft bestand er aus inneren Neins, aus Blicken zur Mauer, aus Gedanken, die ich nicht ausgesprochen habe, weil klar war, wie wenig Raum sie in diesen Stunden hätten.");
+  } else if (mainTag === "freiheit") {
+    p("Wenn ich an das Marianum denke, sehe ich nicht nur die Mauer, sondern auch die Lücken: Gespräche im Park, Abende vor dem Bildschirm, kleine Momente, in denen niemand etwas von mir wollte. Freiheit war hier selten ein großes Ereignis, eher ein paar gestohlene Minuten, in denen ich vergessen habe, dass alles bewertet wird.");
+    p("Vielleicht beginnt Freiheit für mich nicht mit dem Tor, durch das ich am Ende hinausgegangen bin, sondern mit dem Gedanken, dass nicht jede Stimme, die lauter ist als meine, automatisch recht hat.");
+  } else if (mainTag === "anpassung") {
+    p("Auf dem Papier sieht meine Marianum-Zeit ordentlich aus: Noten im grünen Bereich, kaum Konflikte, zuverlässig erledigte Aufgaben. Ich habe schnell gelernt, wie man hier funktioniert, und lange geglaubt, dass das dasselbe ist wie: wie man ist.");
+    p("Erst gegen Ende wurde mir klar, dass man eine Rolle auch wieder ablegen darf. Dass Disziplin nützlich ist, aber kein Charakterersatz. Und dass ich mir selbst erst noch beantworten muss, was von all dem, was ich hier verinnerlicht habe, wirklich zu mir gehört.");
+  } else { // angst oder keine klare Dominanz
+    p("Angst war ein leiser Dauerton in diesen Jahren: Angst vor Blicken, vor Noten, vor Gesprächen, in denen plötzlich jemand meinen Namen sagte und eine Pause machte. Sie hat mich pünktlich gemacht, gründlich, aufmerksam – und gleichzeitig kleiner, als ich hätte sein müssen.");
+    p("Ich habe gelernt, mich in Strukturen zu bewegen, ohne ständig aufzufallen. Aber ich habe auch gemerkt, wie anstrengend es ist, wenn fast jede Entscheidung davon gesteuert wird, was schiefgehen könnte.");
+  }
+
+  if (angstLevel >= 6) {
+    p("Trotzdem bleibt eine Restnervosität. Vielleicht verschwindet sie nicht mit dem letzten Schultag. Aber sie ist nicht mehr die einzige Stimme in meinem Kopf. Daneben gibt es inzwischen auch Neugier, Trotz und so etwas wie Vorfreude auf ein Leben, in dem niemand mehr jeden meiner Sätze korrigiert.");
+  }
+
+  if (secondTag === "gamer" && mainTag !== "gamer") {
+    p("Dass ich ein zweites Leben auf Karten verbracht habe, gehört zu dieser Geschichte dazu. Dort habe ich Niederlagen kassiert, Strategien gelernt, neu angesetzt. Alles ohne Notenbuch. Ein Teil meiner Widerstandskraft kommt wahrscheinlich eher aus diesen Nächten als aus irgendeinem Aufsatz.");
+  } else if (secondTag === "rebell" && mainTag !== "rebell") {
+    p("Und dann waren da diese kleinen inneren Neins. Sie standen nie auf irgendeiner Liste, wurden nicht benotet, aber sie haben verhindert, dass ich das Haus ganz in meinen Kopf übernommen habe.");
+  } else if (secondTag === "freiheit" && mainTag !== "freiheit") {
+    p("Zwischen Mauer, Park und Informatiksaal habe ich mir immerhin gemerkt, wie sich kurze Momente von Weite anfühlen. Es sind nicht viele, aber sie reichen, um zu wissen, dass das Leben größer ist als dieses Gelände.");
+  }
+
+  return out.trim();
+}
+
+function generateDolinarDiary(mainTag, secondTag, scores, history) {
+  let out = "";
+  function p(t){ out += t + "\n\n"; }
+
+  if (mainTag === "kontrolle") {
+    p("Es gibt Tage, an denen ich das Gefühl habe, die einzige feste Struktur in diesem Gebäude zu sein. Die Mauern halten zwar Fremde draußen, aber nicht die Trägheit, nicht die Müdigkeit, nicht die Bildschirme. Wenn ich nicht jeden Schritt im Auge behielte, würden sie in einem Meer aus Halbaufmerksamkeit verschwinden.");
+    p("Sie nennen es Angst, wenn sie zögern, bevor sie meine Tür öffnen. Ich nenne es Respekt. Ohne ein Mindestmaß davon geht hier gar nichts.");
+  } else if (mainTag === "autorität") {
+    p("Ich stehe nicht als Privatperson vor dieser Klasse, sondern als jemand, der eine bestimmte Vorstellung von Bildung verkörpert. Das ist unbequem, manchmal auch einsam, aber es bewahrt mich davor, zum Animateur zu werden, der um jeden Preis gefallen will.");
+    p("Autorität ist in Verruf geraten. Aber ich frage mich, was von dieser Schule übrigbliebe, wenn alle nur noch 'auf Augenhöhe' arbeiten wollten und niemand mehr bereit wäre, die Verantwortung für unpopuläre Entscheidungen zu tragen.");
+  } else if (mainTag === "ordnung") {
+    p("Am Ende eines Jahres bleiben weniger einzelne Stunden in Erinnerung als das, was sich zwischen ihnen spannt: gleichbleibende Regeln, nachvollziehbare Bewertungen, eine gewisse Verlässlichkeit. Vielleicht ist das nicht spektakulär, aber es ist zumindest stabil.");
+    p("Ich weiß, dass ich damit nicht alle erreiche. Aber ich weiß auch, wie es aussieht, wenn niemand mehr ernst nimmt, ob Aufgaben erledigt werden oder nicht. Dafür bin ich nicht Lehrer geworden.");
+  } else if (mainTag === "misstrauen") {
+    p("Wer lange genug in Klassenzimmern verbringt, lernt, Versprechen vorsichtig zu lesen. Zu oft habe ich erlebt, wie große Ankündigungen in halb erledigten Aufgaben endeten. Mein Misstrauen ist nicht theoretisch, es ist biografisch gewachsen.");
+    p("Natürlich kostet es etwas, immer wieder zuerst an Ausreden zu denken. Es macht die Luft schwerer. Aber ich habe nie gelernt, wie man Vertrauen verteilt, ohne ständig den Preis im Blick zu haben.");
+  } else if (mainTag === "rechtfertigung") {
+    p("Manchmal kommt es mir vor, als bestünde mein Beruf zur Hälfte aus Erklären: gegenüber Eltern, der Direktion, Kolleginnen, mir selbst. Ich habe mir einen Wortschatz zugelegt, mit dem ich jede Entscheidung begründen kann – fast unabhängig davon, ob ich im Moment ihrer Entstehung wirklich so klar war.");
+    p("Dieses Gerüst aus Begründungen hält mich aufrecht. Und es verhindert, dass ich mich zu lange an die Stellen stelle, an denen ich schlicht überreagiert habe.");
+  } else { // zweifel oder keine klare Dominanz
+    p("Je länger ich unterrichte, desto weniger eindeutig wird alles, was am Anfang so klar schien. Früher war Strenge automatisch richtig, Nachsicht automatisch gefährlich. Heute sehe ich Gesichter vor mir, wenn ich das sage, und ihre Geschichten passen nicht alle in diese Schablonen.");
+    p("Ich weiß, dass ich vielen geholfen habe – mit Struktur, mit Verlässlichkeit, mit hohen Ansprüchen. Ich weiß aber auch, dass es welche gibt, für die ich vor allem eine Wand war. Und ich weiß noch nicht, was ich mit diesem Wissen anfangen soll.");
+  }
+
+  if (secondTag === "zweifel" && mainTag !== "zweifel") {
+    p("Trotz aller Argumente bleibt eine leise Frage im Hintergrund: Ob sich all das, was ich hier verteidigt habe, wirklich so erzählen lässt, wie ich es mir zurechtgelegt habe. Diese Frage ist unangenehm – aber sie ist wahrscheinlich das Einzige, was mich davor schützt, mich für unfehlbar zu halten.");
+  }
+
+  if (secondTag === "kontrolle" && mainTag !== "kontrolle") {
+    p("Ich merke, wie sehr Kontrolle zu einer zweiten Haut geworden ist. Selbst außerhalb der Schule registriere ich zu laute Gespräche, zu offene Fenster, zu lockere Strukturen. Vielleicht ist eine meiner nächsten Aufgaben, bewusst zu lernen, nicht alles regulieren zu müssen.");
+  }
+
+  return out.trim();
+}
+
+backBtnEl.addEventListener("click", stepBack);
+restartBtnEl.addEventListener("click", restartGame);
+</script>
+</body>
+</html>
